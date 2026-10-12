@@ -1,0 +1,260 @@
+/*1011
+どうやらﾎﾟｲﾝﾀの移動と、ﾎﾟｲﾝﾀのﾎﾟｲﾝﾀの移動の問題の出来が良くないので、実際に問題で出されたコードを書いてみる。
+ﾎﾟｲﾝﾀを移動させたのか、ﾎﾟｲﾝﾀのﾎﾟｲﾝﾀを移動させたのか理解が曖昧なようだ。
+自力でどんな風にコードを読み取ったのかコメントで記載するので、理解が間違っている箇所を指摘、解説してほしい。
+*/
+#include<stdio.h>
+int main(void)
+{
+  char minst[][8]={"Violin","Cello","Flute","Trumpet"};
+                  //char型2次元配列minstを定義。行は[3]の4要素。列は[8]の8要素+自動追加分\0
+  /*char minst[][8]の正体とは
+  まずﾎﾟｲﾝﾀの配列(ex:char *flower[])と2次元配列(ex:char minst[][8])のメモリ上での構造が全く異なるのを理解出来ていない。
+  char minst[][8]はメモリ上に4行×8列=32バイトの文字が隙間なく連続して並んでいる状態。
+  minst[0]                 minst[1]           minst[2]             minst[3]
+      　[V][i][o][l][i][n][\0]  [C][e][l][l][o][\0] [F][l][u][t][e][\0] [T][r][u][m][p][e][t][\0]
+  ｱﾄﾞﾚｽ 1000...            1007 1008...        1015 1016           1023 1024                 1031
+  */
+  char *p;  //char型ﾎﾟｲﾝﾀpの定義
+
+  p= minst[2];      //pにminst[2]3番目char型配列"Flute"の先頭ｱﾄﾞﾚｽ代入
+                    //(""で囲まれた文字列も内部的には先頭ｱﾄﾞﾚｽのみで扱われる)
+                    //minst[2]は3行目の配列名で配列名＝先頭要素ｱﾄﾞﾚｽなので**&minst[2][0]**に変換されて解釈される。
+  
+  printf("%s\n",p);  　//pのﾃﾞｰﾀ型はchar*なので文字自体のｱﾄﾞﾚｽを指している。
+                      //書式指定子は%s。自動追加の\0手前まで読み込んでcmdに出力。
+  printf("%s\n",p+3);　//pはchar*型なので文字自体のｱﾄﾞﾚｽを指している。
+                        //"Flute"の"F"を指しているﾎﾟｲﾝﾀを3進めるので、出力はte
+
+  printf("%c\n",minst[3][1]);  //二次元配列minstの4行目2列目のアドレスの一文字を表示なので、r
+
+  p =&minst[0][1];  //char配列ｱﾄﾞﾚｽ(文字列先頭ﾎﾟｲﾝﾀ)を格納するminst自体のアドレスをﾎﾟｲﾝﾀへ代入[0][1]なのでi
+  
+  printf("%s\n",p+3);  //iを指すﾎﾟｲﾝﾀを3要素分進める。ここではﾎﾟｲﾝﾀはminst自体のｱﾄﾞﾚｽ。なのでminst[3][1]でr
+                      //この動きはpがminstの様な二次元配列のﾎﾟｲﾝﾀだったらという話で、単なるchar*型のpでは違う
+                      //char *p[][]と宣言？定義？されれば良いのかな？
+                      //
+/*ここから誤解ポイント
+  「p」はchar*型なので2次元配列の構造(1行が8ﾊﾞｲﾄであること)を知らない。pにとっては単なる「32ﾊﾞｲﾄ」の連続した文字の列に見える
+  pは、minst[0][1]=='i'==ｱﾄﾞﾚｽ1001番を指している。そこから3文字(3ﾊﾞｲﾄ)分進んだ場所を指す。
+  'i'⇒'o'⇒'l'⇒'i'を指すそして書式指定子は%s。inが出力される
+  */
+  
+  p++;                //pを1加算
+  printf("%c\n",*p);   //pの指す[4][1]の文字の所へ行って文字を書き写して表示。なのだけれど、配列の上限を超えてしまっている？
+                      //→間違い。printf()内での加算はpに+3した「一時的なｱﾄﾞﾚｽ」。
+                      //もしprintf()内でp=p+3のように代入したらﾎﾟｲﾝﾀが進んだ状態になる？
+                      //ので、pはまだ'i'を指していて。それを1進めるので答えは'o'
+  return 0; 
+}
+//1011_P-47-Q6
+#include<stdio.h>
+int main(void)
+{
+  char *flowers[] = {"ROSE","TULIP","PANSY","LILY","COSMOS"};  //char型ではなく、char*型配列なのに注意？普通のchar型配列とはどう違う？
+//⇒char minst[][8]はメモリ上に32バイトが一列に並んでいたが、char *flowers[]はﾎﾟｲﾝﾀ配列なので、配列flowers自体にはｱﾄﾞﾚｽ情報しか入っていない
+//"ROSE"や"TULIP"はメモリ上の別の場所に存在する。
+  
+  char *p, **pp;    //char型の変数のｱﾄﾞﾚｽを格納するchar*型のﾎﾟｲﾝﾀpの定義。ﾎﾟｲﾝﾀのﾎﾟｲﾝﾀ型変数つまりchar**型変数ppを定義。
+
+  p = flowers[1];    //flowers[1]==&flowers[1]==&"TULIP"なので、TULIPのアドレスを代入。
+                    //間違い。&flowers[1]はアドレスのアドレス情報つまり、ﾎﾟｲﾝﾀのﾎﾟｲﾝﾀ型で型が違うので＝＝ではない。あと文字列自体に&はNG。
+                    //シンプルに p = flowers[1];だけで"TULIP"の先頭ｱﾄﾞﾚｽが代入される。と考える。
+  printf("%s\n", p );    //よってTULIPと表示
+  p += 2;                //ﾎﾟｲﾝﾀ自身に2ｱﾄﾞﾚｽ分進める。char*型なので配列の配列とか知ったことなく２バイトだけ進める'T','U','L'よってLIP
+  printf("%s\n", p );
+
+  pp = &flowers[2];    //ﾎﾟｲﾝﾀのﾎﾟｲﾝﾀ型にTULIPが格納されている箱の場所、つまり配列flowers[2]のアドレスを書き込む
+                     //**pp== *p == 'P'
+                      //*pp==  p == flowers[2]
+                       //pp == &flowers[2],
+                      //&pp= &flowers[2]自体の場所
+  printf("%s\n", *pp );　//間接参照した先は、PANSYのアドレス情報flowers[2]なのでPANSYと表示
+  printf("%s\n", *(pp + 1) );  //ppはchar**型なので、&flowers[2+1]と考えて良い。よってLILY。
+                              //ちなみに（pp + 1）と*を付け忘れると、char型のアドレス情報期待するところにﾎﾟｲﾝﾀのアドレス情報が来てエラー
+  printf("%c\n", **pp );    //**ppの先は、printf()ではコピーに計算しただけなので、変数ppの変更はない。よって参照先'P'が%cで表示
+  return 0;
+}
+//1011_p-47-Q6,1013追記
+#include<stdio.h>
+int main(void)
+{
+  char *color[] = {"YELLOW","RED","BLUE","GREEN","BLACK","WHITE"};　char型ﾎﾟｲﾝﾀの配列colorなので格納可能はﾎﾟｲﾝﾀ
+  char *p; 
+  char **pp;
+
+  p = color[4];  //ﾎﾟｲﾝﾀpにcolor[4]を代入。&color[4]が配列4番目入れ物自体のｱﾄﾞﾚｽで、colorと言う配列名だけなら&color[0]
+                  //と言う配列先頭要素'入れ物'自体のｱﾄﾞﾚｽになるが、今回はcolor[4]なのでBLACKの先頭'B'のｱﾄﾞﾚｽが代入。
+  printf("%s\n", p ); //なので、%sでBLACK表示
+
+  p++;
+  printf("%s\n", p ); //pはchar*型なので配列構造なんて知ったこったない。ので1文字分進めて、LACK
+
+  pp = color; //配列名==先頭要素ｱﾄﾞﾚｽ&color[0]。今回は各要素に格納物自体も配列なのは注意。なので先頭入れ物自体のｱﾄﾞﾚｽ
+  printf("%s\n", *pp + 2 ); // ﾎﾟｲﾝﾀのﾎﾟｲﾝﾀ型に間接参照一つしか付けないので、一つﾎﾟｲﾝﾀを辿って*pp=p=color[0]、
+                            //つまり"YELLOW"の先頭要素ｱﾄﾞﾚｽを参照。よって'Y'のｱﾄﾞﾚｽを取ってくる。それを2つ分進めるので
+                            //'L'のｱﾄﾞﾚｽが%sで渡せれて最後まで表示 LLOW
+  printf("%s\n", *( pp + 2 )); // ﾎﾟｲﾝﾀのﾎﾟｲﾝﾀ型として2つ進めた後に、間接参照1つだけ。なのでｱﾄﾞﾚｽcolor[2]を指す。  
+                                //そしてそれは'B'のｱﾄﾞﾚｽなので、BLUE
+
+  pp += 3; 　//ﾎﾟｲﾝﾀﾎﾟｲﾝﾀ型として自身に３を足して代入する。ここまでprintf()内では足したコピーは使われたが、
+              //変数には代入されていないので&color[0]から３進んで&color[3]を指している状態 
+              //color[3]や"GREEN"ではないので注意。
+  printf("%c\n", *( *pp + 1 ) ); // 間接参照して取ってきた中身char型のｱﾄﾞﾚｽcolor[3]に＋１する。
+                                //つまり"GREEN"の'G'のｱﾄﾞﾚｽに+1をするので'R'のｱﾄﾞﾚｽになる。そして
+                                //それを間接参照するので、'R'のところに行ってRを取って来て%cで表示　R
+  return 0;
+}
+
+//1013_P-48Q6
+#include<stdio.h>
+int main(void)
+{
+  char name[][7] = {"Seton","Fabre","Darwin","Mendel"}; //二次元配列name[3][7]4×8bbyteの1列のデータ
+  char *p;
+
+  p = name[1];         //p = name[1][0]と解釈されるよって*p='F'
+  printf("%s\n", p );  //なので、Fabre
+  printf("%s\n", p+2 );  //ただのchar型ﾎﾟｲﾝﾀには二次元配列構造なんて知ったこったない。２文字分進めて%sよって　bre
+
+  printf("%c\n", name[2][3] );　//"Dawin"の三番目の文字""自体""よって　w
+
+  p = &name[3][1];      //二次元配列自体のｱﾄﾞﾚｽを代入。*p = 'e'
+  printf("%s\n", p+1 ); //一次ﾎﾟｲﾝﾀを１文字分進める、p = &name[3][2]で%sなので ndel
+  p--;                  //１文字分マイナス==戻る。
+  printf("%s\n", *p );  //間接参照したのでpに格納ｱﾄﾞﾚｽ、&name[3][0]の中身は"Mendel"の先頭要素ｱﾄﾞﾚｽよって Mendel
+                        //⇒違う。二次元配列なので、ｱﾄﾞﾚｽではなくデータ自体が一列に並んでいる。
+                        //なので&name[3][0]を間接参照したら*&name[3][0]打ち消しあってname[3][0]
+                        //でこれは入っていた要素自体を指すのでｱﾄﾞﾚｽを期待する%sではエラーになる？か
+                        //文字コードMをｱﾄﾞﾚｽ表記で無理やり表示する？あ、%sじゃなくて%cでした。　よって　M
+  return 0;
+}
+
+//1013_P-51Q6
+#include<stdio.h>
+int main(void)
+{
+  char *Container[5] = {"Stack","List","Array","Queue","Hash"};
+  char *p, **pp;
+  p = Container[3];          //*p = 'Q'
+  printf("%s\n", p);         //Queue
+  printf("%s\n", p + 2);     //char*p + 2 , *p = 'e'(コピー) eue
+  printf("%c\n", Container[1][2]);  //Listの　s
+  pp = Container;            //*pp = &Container[0], **pp ='S'
+  printf("%s\n", *(pp + 2)); //*pp=&container[2](コピー), **pp='A' Array
+  pp++;                      //*pp=&container[1]
+  printf("%c\n", **pp);      //**pp=container[1]='L'
+  return 0;
+}
+
+//1013_P-50Q6
+#include<stdio.h>
+int main(void)
+{
+  char minst[][8] = {"Violin","Cello","Flute","Trumpet"};
+  char *p;
+  p = minst[2];               //*p='F'
+  printf("%s\n", p);          //Flute
+  printf("%s\n", p + 3);      //*p='t' te
+  printf("%c\n", minst[3][1]);  //r
+  p = &minst[0][1];            //V'i'olin*p='i'
+  printf("%s\n", p + 3);        //Viol'i'n*p='i' in
+  p++;                          //V'i'olin⇒Vi'o'lin*p='o'
+  printf("%c\n", *p);           //o
+  return 0;
+}
+
+//1013_P-sampleQ6
+#include<stdio.h>
+int main(void)
+{
+  int data[] = {9,-1,7,6,3,-5,6,2,-4,0};
+  int *ip, *iq;
+  int i, value, flag;
+  ip = data;                //data=&data[0],*ip=9
+  printf("%d\n", *ip + 1);  //*ip=9,9+1=10 10
+  iq =data;                  //iq=&data[0]
+  printf("%d\n", *(ip + 3));    //ip=&data[0+3],*ip=6 6
+  ip=data;                    //ip=&data[0]
+  iq=ip+6;                    //iq=&data[0+6],*iq=6
+  iq--;                       //iq=&data[5],*iq=-5
+  printf("%d\n", *iq);    //-5
+  ip=&data[1];            //*ip=-1
+  iq=&data[6];            //*iq=6
+  value=0;
+  for(i=0;i<3;i++){
+    value += *ip + *iq;   //{(-1)+6}+{7+(-5)}+{6+3}=16 16
+    ip++;
+    iq--;
+  }
+  printf("%d\n", *ip + 1);    //ip=d&data[4],*ip=3,3+1=4 4 
+  flag = 0;
+  for(ip=data; ip!=0&&flag==0; ip++){   //ip=&data[0],*ip=9,     ip=&data[1],...ip=&[3],*ip=6       
+    for(iq=ip+1; *iq!=0; iq++){    iq=&data[1]⇒iq=&data[9],*iq=0
+      if(*ip==*iq){                   iq=&data[4]⇒ip=&data[7]                           *iq=6 break;                        
+        flag = 1;
+        break;
+      }
+    }
+  }
+  printf("%d\n", *iq);    //6
+  return 0;
+}
+
+//1014_P-45Q6
+#include<stdio.h>
+int main(void)
+{                    0        1      2      3      4        5
+  char *color[] = {"YELLOW","RED","BLUE","GREEN","BLACK","WHITE"}; //二次元配列と違い、データそのものは別の場所バラバラ
+  char *p;
+  char **pp;
+  p = color[4];            //*p='G'
+  printf("%s\n", p);       //p=color[4],"'B'LACK"  BLACK
+  p++;                      //pはchar*型1文字進む。"'B'LACK"⇒"B'L'ACK"  
+  printf("%s\n", p);        //LACK
+  pp = color;                //pp=&color[0],*pp=color[0]
+  printf("%s\n", *pp+2);      //*pp=color[0] 間接参照一つで連れてくるのはchar*型情報。よって２文字進めたコピー  LLOW
+  printf("%s\n", *(pp+2));    // char**ppとして２つ分進めたコピー。pp=&color[0+2],*pp=color[2] 'B'のアドレス　BLUE
+  pp +=3;                     //pp=&color[0+3],*pp=color[3],'G'
+  printf("%c\n", *(*pp+1));    //*pp=color[3]これはchar*型一文字進める'R'のアドレス、**pp＝'R'をコピーしてきて%c  R
+  return 0;
+}
+#include<stdio.h>
+int main(void)
+{
+  char name[][7] = {"Seton","Fabre","Darwin","Mendel"};  //二次元配列なので４×８の32bitの横並びのデータ
+  char *p;        //ただﾎﾟｲﾝﾀはchar*型なので、二次元配列構造なんて知ったことではない。
+  p = name[1];           //*p='F'
+  printf("%s\n", p);          //%sはname[1]のｱﾄﾞﾚｽを受け取る  Fabre
+  printf("%s\n", p+2);        //char*型2つ分＝2文字＝2バイト分進めたコピー,*p='b'  bre
+  printf("%c\n", name[2][3]);    //%cなのに注意。name[2][3]は"Dar'w'in"  w
+  p=&name[3][1];                //*p="Mendel"の'e'
+  printf("%s\n", p+1);          //char*型pを1文字分進めたコピー"M'e'ndel"⇒"Me'n'del"で%s  ndel
+  p--;                          //一文字分マイナス  "'M'endel"
+  printf("%c\n", *p);            //*p='M'  M
+  return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
